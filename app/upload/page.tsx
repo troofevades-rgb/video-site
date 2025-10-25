@@ -36,11 +36,9 @@ export default function UploadPage() {
       }
       const { signedPutUrl, video_id } = await r.json();
       setStatus('Uploading…');
-      const put = await fetch(signedPutUrl, {
-        method: 'PUT',
-        body: file,
-        // no headers
-      });
+      const put = await fetch(signedPutUrl, { method: 'PUT', body: file });
+      // (no extra headers)
+      
       if (!put.ok) {
         const txt = await put.text().catch(()=>'');
         setStatus(`Upload failed (${put.status}) ${txt}`);
