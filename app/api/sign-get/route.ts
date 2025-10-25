@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 
 export const runtime = "edge";
 
-/** Read Wasabi config from Cloudflare-injected `env` (or process.env when local). */
 function getEnv(maybeEnv: any) {
   const pe = (process as any)?.env ?? {};
   const read = (k: string) => (maybeEnv && k in maybeEnv ? maybeEnv[k] : pe[k]);
@@ -30,7 +29,6 @@ function makeS3(E: ReturnType<typeof getEnv>) {
   });
 }
 
-// Optional: if you’re storing (id -> s3_key) in D1
 async function keyFromId(env: any, id: string): Promise<string | null> {
   try {
     const db = (env as any)?.VIDEOS_DB;
