@@ -1,31 +1,85 @@
-import { listPosts } from "@/lib/db";
-export const runtime = 'edge';
+'use client';
 
+import { useState } from 'react';
 
-export default async function Page() {
-// @ts-ignore Cloudflare adapter exposes env on process.env at runtime
-const env = (globalThis as any).process?.env as any;
-const posts = await listPosts(env);
-return (
-<main>
-<h1>Timeline</h1>
-<p>MP4/H.264 recommended. View/download links are time-limited.</p>
-<ul style={{listStyle:'none', padding:0}}>
-{posts.map((p: any) => (
-<li key={p.id} style={{border:'1px solid #ddd', padding:12, margin:'12px 0', borderRadius:8}}>
-<h3>{p.title}</h3>
-<p>{p.body}</p>
-<small>{new Date(p.created_at).toLocaleString()}</small>
-<div style={{marginTop:8}}>
-{(p.video_ids?.split(',')||[]).filter(Boolean).map((vid: string) => (
-<div key={vid} style={{marginTop:8}}>
-<a href={`/watch/${vid}`}>Watch {vid.slice(0,8)}…</a>
-</div>
-))}
-</div>
-</li>
-))}
-</ul>
-</main>
-);
+export default function UploadPage() {
+  const [status, setStatus] = useState<string>('');
+  const [file, setFile] = useState<File | null>(null);
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+
+  // Quick runtime sanity checks to show on the page
+  const checks = typeof window !== 'undefined'
+    ? 'client ok'
+    : 'NO WINDOW';
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!file) { setStatus('Pick a file first'); return; }
+    setStatus('Requesting upload URL…');
+
+    try {
+      const r = await fetch('/api/sign-upload', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          filename: file.name,
+          size_bytes: file.size,
+          contentType: file.type || 'video/mp4',
+          post: { id: crypto.randomUUID(), title, body }
+        })
+      });
+      if (!r.ok) {
+        const txt = await r.text().catch(()=>'');
+        setStatus(`Sign failed (${r.status}) ${txt}`);
+        return;
+      }
+      const { signedPutUrl, video_id } = await r.json();
+      setStatus('Uploading…');
+      const put = await fetch(signedPutUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'content-type': file.type || 'video/mp4',
+          'cache-control': 'public, max-age=31536000, immutable'
+        }
+      });
+      if (!put.ok) {
+        const txt = await put.text().catch(()=>'');
+        setStatus(`Upload failed (${put.status}) ${txt}`);
+        return;
+      }
+      setStatus('Uploaded! Redirecting…');
+      window.location.href = `/watch/${video_id}`;
+    } catch (err: any) {
+      setStatus(`Error: ${err?.message || String(err)}`);
+    }
+  }
+
+  return (
+    <main style={{maxWidth: 720}}>
+      <h1>Upload a video</h1>
+      <p><small>Diagnostics: {checks}</small></p>
+      <form onSubmit={onSubmit}>
+        <div style={{margin:'8px 0'}}>
+          <label>Title<br/>
+            <input value={title} onChange={e=>setTitle(e.target.value)} required />
+          </label>
+        </div>
+        <div style={{margin:'8px 0'}}>
+          <label>Post text<br/>
+            <textarea value={body} onChange={e=>setBody(e.target.value)} />
+          </label>
+        </div>
+        <div style={{margin:'8px 0'}}>
+          <label>Video file<br/>
+            <input type="file" accept="video/*" onChange={e=>setFile(e.target.files?.[0] || null)} required />
+          </label>
+          <div><small>Max size (env): {Number(process.env.MAX_FILE_BYTES||0) ? Math.round(Number(process.env.MAX_FILE_BYTES)/(1024*1024))+' MB' : 'not set'}</small></div>
+        </div>
+        <button type="submit">Upload</button>
+      </form>
+      <p>{status}</p>
+    </main>
+  );
 }
