@@ -15,11 +15,12 @@ if(!row) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
 
 const s3 = new S3Client({
-region: env.WASABI_REGION,
-endpoint: env.WASABI_ENDPOINT,
-credentials: { accessKeyId: env.WASABI_KEY, secretAccessKey: env.WASABI_SECRET },
-forcePathStyle: true,
+  region: env.WASABI_REGION,
+  endpoint: env.WASABI_ENDPOINT,
+  credentials: { accessKeyId: env.WASABI_KEY, secretAccessKey: env.WASABI_SECRET },
+  forcePathStyle: true,               // <-- important
 });
+
 
 
 const viewUrl = await getSignedUrl(s3, new GetObjectCommand({ Bucket: env.WASABI_BUCKET, Key: row.s3_key }), { expiresIn: 60 * 60 });
