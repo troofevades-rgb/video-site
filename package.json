@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "next build && npx @cloudflare/next-on-pages",
+    "build": "next build",
+	"cf:build": "next build && npx @cloudflare/next-on-pages@1",
     "preview": "npx wrangler pages dev ./.vercel/output/static --compatibility-date=2024-09-01",
     "deploy": "npx wrangler pages deploy ./.vercel/output/static"
   },
