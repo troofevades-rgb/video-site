@@ -20,7 +20,8 @@ if(size_bytes > max) return NextResponse.json({ error: 'File too large' }, { sta
 const s3 = new S3Client({
 region: env.WASABI_REGION,
 endpoint: env.WASABI_ENDPOINT,
-credentials: { accessKeyId: env.WASABI_KEY, secretAccessKey: env.WASABI_SECRET }
+credentials: { accessKeyId: env.WASABI_KEY, secretAccessKey: env.WASABI_SECRET },
+forcePathStyle: true,
 });
 
 
