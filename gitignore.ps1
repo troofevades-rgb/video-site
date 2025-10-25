@@ -1,0 +1,22 @@
+@'
+# dependencies & builds
+node_modules/
+.next/
+.vercel/
+.wrangler/
+dist/
+out/
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+# env
+.env
+.env.*
+!.env.local.example
+!.env.example
+# OS/editor
+.DS_Store
+Thumbs.db
+'@ | Set-Content .gitignore -Encoding UTF8
