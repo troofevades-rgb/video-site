@@ -39,9 +39,7 @@ export default function UploadPage() {
       const put = await fetch(signedPutUrl, {
         method: 'PUT',
         body: file,
-        headers: {
-          'content-type': file.type || 'video/mp4',
-          'cache-control': 'public, max-age=31536000, immutable'
+        // no headers
         }
       });
       if (!put.ok) {
