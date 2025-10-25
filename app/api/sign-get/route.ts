@@ -4,7 +4,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { getVideo } from '@/lib/db';
 
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 
 export async function POST(req: NextRequest) {
