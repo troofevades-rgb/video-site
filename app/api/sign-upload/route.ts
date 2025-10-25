@@ -5,7 +5,7 @@ import { v4 as uuid } from 'uuid';
 import { insertPost, insertVideo, attachVideoToPost } from '@/lib/db';
 
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 
 export async function POST(req: NextRequest) {
