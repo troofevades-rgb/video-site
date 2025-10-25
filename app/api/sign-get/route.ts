@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 
 export const runtime = "edge";
 
+/** Read Wasabi config from Cloudflare-injected `env` (or process.env when local). */
 function getEnv(maybeEnv: any) {
   const pe = (process as any)?.env ?? {};
   const read = (k: string) => (maybeEnv && k in maybeEnv ? maybeEnv[k] : pe[k]);
@@ -29,6 +30,7 @@ function makeS3(E: ReturnType<typeof getEnv>) {
   });
 }
 
+// Optional: if you’re storing (id -> s3_key) in D1
 async function keyFromId(env: any, id: string): Promise<string | null> {
   try {
     const db = (env as any)?.VIDEOS_DB;
@@ -40,17 +42,16 @@ async function keyFromId(env: any, id: string): Promise<string | null> {
   }
 }
 
-export async function GET(req: Request, env: any, _ctx?: any) {
+export async function GET(req: Request, env: any) {
   try {
     const E = getEnv(env);
-
     const url = new URL(req.url);
-    const key = url.searchParams.get("key");
-    const id = url.searchParams.get("id");
+    const keyQ = url.searchParams.get("key");
+    const idQ = url.searchParams.get("id");
 
-    let objectKey = key || "";
-    if (!objectKey && id) {
-      const looked = await keyFromId(env, id);
+    let objectKey = keyQ || "";
+    if (!objectKey && idQ) {
+      const looked = await keyFromId(env, idQ);
       if (!looked) return NextResponse.json({ error: "Video not found" }, { status: 404 });
       objectKey = looked;
     }
