@@ -40,7 +40,6 @@ export default function UploadPage() {
         method: 'PUT',
         body: file,
         // no headers
-        }
       });
       if (!put.ok) {
         const txt = await put.text().catch(()=>'');
